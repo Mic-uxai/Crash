@@ -525,11 +525,11 @@ function updateEWBanner(signals, trigScore, vels){
 
 /* ══ V10.4: VELOCITY INDICATORS ══ */
 .vel-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap);margin-bottom:var(--gap);}
-.vel-card{background:var(--s1);border:1px solid var(--b2);border-radius:9px;padding:12px 14px;}
+.vel-card{background:var(--s1);border:1px solid var(--b2);border-radius:12px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,0,0,.07);}
 .vel-title{font-family:var(--mono);font-size:.84rem;color:var(--mt);margin-bottom:5px;}
-.vel-val{font-family:var(--mono);font-size:1.55rem;font-weight:800;}
+.vel-val{font-family:var(--mono);font-size:1.8rem;font-weight:800;color:var(--tx);}
 .vel-chg{font-family:var(--mono);font-size:1.35rem;margin-top:3px;}
-.vel-up{color:var(--red)}.vel-dn{color:var(--grn)}.vel-flat{color:var(--mt)}
+.vel-up{color:var(--red);font-weight:800}.vel-dn{color:var(--grn);font-weight:800}.vel-flat{color:var(--mt)}
 @media(max-width:700px){.vel-wrap{grid-template-columns:repeat(2,1fr);}}
 
 .footnote{font-family:var(--mono);font-size:.82rem;color:var(--mt);line-height:1.9;border-top:1px solid var(--b2);padding-top:14px;margin-top:18px;}
@@ -607,14 +607,14 @@ function updateEWBanner(signals, trigScore, vels){
 .fsd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .fsd.live{background:var(--grn);box-shadow:0 0 5px var(--grn);animation:blink 1.6s ease-in-out infinite;}
 .fsd.manual{background:var(--yel);}.fsd.off{background:var(--mt);}
-.fred-series-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:12px;}
-.fsc{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:7px 10px;font-family:var(--mono);font-size:.8rem;}
-.fsc-id{color:var(--grn);font-weight:700;margin-bottom:1px;direction:ltr;}
-.fsc-name{color:var(--mt);line-height:1.3;font-size:.75rem;}
-.fsc-val{color:#fff;font-weight:600;margin-top:3px;}
-.fsc-date{color:var(--mt);font-size:.72rem;}
-.fsc-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-left:3px;vertical-align:middle;}
-.fsc-dot.ok{background:var(--grn);}.fsc-dot.wait{background:var(--yel);}.fsc-dot.err{background:var(--red);}.fsc-dot.skip{background:var(--mt);}
+.fred-series-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;}
+.fsc{background:var(--s1);border:1px solid var(--b2);border-radius:10px;padding:14px 16px;font-family:var(--mono);font-size:.9rem;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.fsc-id{color:var(--grn);font-weight:800;font-size:1rem;margin-bottom:4px;direction:ltr;letter-spacing:.03em;}
+.fsc-name{color:var(--mt);line-height:1.3;font-size:.88rem;margin-bottom:6px;}
+.fsc-val{color:var(--tx);font-weight:700;font-size:1.4rem;margin-top:4px;letter-spacing:-.01em;}
+.fsc-date{color:var(--mt);font-size:.82rem;margin-top:2px;}
+.fsc-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle;}
+.fsc-dot.ok{background:var(--grn);box-shadow:0 0 5px rgba(0,149,107,.4);}.fsc-dot.wait{background:var(--yel);}.fsc-dot.err{background:var(--red);}.fsc-dot.skip{background:var(--mt);}
 .fetch-progress{height:3px;background:var(--b2);border-radius:2px;overflow:hidden;margin-top:8px;display:none;}
 .fetch-progress.active{display:block;}
 .fetch-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--grn),var(--blu));border-radius:2px;transition:width .4s ease;}
@@ -2147,6 +2147,22 @@ document.addEventListener('DOMContentLoaded',()=>{
   const sp0  = +(BL.y10 - BL.y2).toFixed(2);
   const s3m0 = +(BL.y10 - BL.y3m).toFixed(2);
   buildRadarChart(BL, sp0, s3m0);
+
+  // V10.5: Show baseline values in vel cards immediately
+  const velIds = {
+    'vel-hyoas': BL.hy_oas?.toFixed(2)+'%',
+    'vel-trigger': SCORE_BASELINE+'/100',
+    'vel-vix': BL.vix?.toFixed(1),
+    'vel-sahm': BL.sahm?.toFixed(3)+'pp'
+  };
+  Object.entries(velIds).forEach(([id,val])=>{
+    const el=$(id);
+    if(el){ el.textContent=val; el.className='vel-val vel-flat'; }
+  });
+  ['vel-hyoas-lbl','vel-trigger-lbl','vel-vix-lbl','vel-sahm-lbl'].forEach(id=>{
+    const el=$(id);
+    if(el) el.textContent='Baseline · לחץ REFRESH לשינויים';
+  });
 
   // V10.4: Check Early Warning from stored history on load
   try{
