@@ -1489,30 +1489,45 @@ function saveFredKey(){
 
 async function fetchOneFred(seriesId,apiKey){
   const fredUrl=`https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&sort_order=desc&limit=5&api_key=${apiKey}&file_type=json`;
+  const enc = encodeURIComponent(fredUrl);
 
-  // Strategy 1: Direct (works if served from https or CORS allowed)
-  // Strategy 2: allorigins proxy
-  // Strategy 3: corsproxy.io
+  // 5 proxy strategies — tried in parallel, first success wins
   const proxies = [
+    // 1. Direct CORS (works from GitHub Pages with FRED's CORS headers)
     async () => {
       const r = await fetch(fredUrl, {mode:'cors'});
-      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      if(!r.ok) throw new Error(`direct HTTP ${r.status}`);
       return r.json();
     },
+    // 2. allorigins.win — reliable, free
     async () => {
-      const enc = encodeURIComponent(fredUrl);
-      const r = await fetch(`https://api.allorigins.win/get?url=${enc}`);
-      if(!r.ok) throw new Error(`proxy1 HTTP ${r.status}`);
-      const wrapper = await r.json();
-      return JSON.parse(wrapper.contents);
+      const r = await fetch(`https://api.allorigins.win/get?url=${enc}`, {cache:'no-store'});
+      if(!r.ok) throw new Error(`allorigins HTTP ${r.status}`);
+      const w = await r.json();
+      if(!w.contents) throw new Error('allorigins: empty');
+      return JSON.parse(w.contents);
     },
+    // 3. corsproxy.io — updated URL format
     async () => {
-      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(fredUrl)}`);
-      if(!r.ok) throw new Error(`proxy2 HTTP ${r.status}`);
+      const r = await fetch(`https://corsproxy.io/?url=${enc}`);
+      if(!r.ok) throw new Error(`corsproxy HTTP ${r.status}`);
+      return r.json();
+    },
+    // 4. thingproxy — alternative
+    async () => {
+      const r = await fetch(`https://thingproxy.freeboard.io/fetch/${fredUrl}`);
+      if(!r.ok) throw new Error(`thingproxy HTTP ${r.status}`);
+      return r.json();
+    },
+    // 5. jsonp.afeld.me — last resort
+    async () => {
+      const r = await fetch(`https://jsonp.afeld.me/?url=${enc}`);
+      if(!r.ok) throw new Error(`jsonp HTTP ${r.status}`);
       return r.json();
     },
   ];
 
+  // Try sequentially — if one fails move to next
   let lastErr;
   for(const fn of proxies){
     try{
@@ -1520,7 +1535,7 @@ async function fetchOneFred(seriesId,apiKey){
       for(const obs of (data.observations||[])){
         if(obs.value!=='.' && obs.value!=='') return {val:obs.value, date:obs.date};
       }
-      throw new Error('no valid value');
+      throw new Error('no valid observation');
     }catch(e){
       lastErr = e;
       continue;
