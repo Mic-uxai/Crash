@@ -2605,33 +2605,11 @@ async function fetchOneFred(seriesId,apiKey){
   const fredUrl=`https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&sort_order=desc&limit=5&api_key=${apiKey}&file_type=json`;
   const enc = encodeURIComponent(fredUrl);
 
-  // ── PRIMARY: Claude API as FRED proxy ──────────────────────
-  // Most reliable — server-side, no CORS issues
-  async function viaClaudeAPI(){
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        messages:[{
-          role:'user',
-          content:`Fetch this FRED API URL and return ONLY the raw JSON response, nothing else: ${fredUrl}`
-        }]
-      })
-    });
-    if(!response.ok) throw new Error(`Claude API HTTP ${response.status}`);
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-    // Parse JSON from Claude response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('Claude: no JSON in response');
-    return JSON.parse(jsonMatch[0]);
-  }
-
-  // ── FALLBACKS: Public CORS proxies ─────────────────────────
+  // v11.6.6: Removed Claude API proxy (only worked inside claude.ai).
+  // Now running on https:// (GitHub Pages), direct fetch may work for FRED.
+  // If not, fall back to public CORS proxies.
   const fallbacks = [
-    // Direct CORS
+    // Direct CORS (works on https:// origins)
     async () => {
       const r = await fetch(fredUrl, {mode:'cors', cache:'no-store'});
       if(!r.ok) throw new Error(`direct HTTP ${r.status}`);
@@ -2665,26 +2643,13 @@ async function fetchOneFred(seriesId,apiKey){
     },
   ];
 
-  // Try Claude API first
-  try{
-    const data = await Promise.race([
-      viaClaudeAPI(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Claude timeout')),10000))
-    ]);
-    for(const obs of (data.observations||[])){
-      if(obs.value!=='.' && obs.value!=='') return {val:obs.value, date:obs.date};
-    }
-  }catch(e){
-    console.warn('Claude proxy failed, trying fallbacks:', e.message);
-  }
-
-  // Try fallbacks with 8s timeout each
+  // Try each fallback with 5s timeout each
   let lastErr;
   for(const fn of fallbacks){
     try{
       const data = await Promise.race([
         fn(),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
       ]);
       for(const obs of (data.observations||[])){
         if(obs.value!=='.' && obs.value!=='') return {val:obs.value, date:obs.date};
