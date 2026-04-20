@@ -1554,8 +1554,8 @@ function updateEWBanner(signals, trigScore, vels){
     </div>
     <div class="gc-ci">Score: <span id="tNumSmall">48</span>/100 &nbsp;·&nbsp; 90% CI: [<span id="ciRange2">41–51</span>] &nbsp;·&nbsp; <span class="overfit-badge">overfitting risk HIGH</span></div>
     <div style="margin-top:10px;font-family:var(--mono);font-size:0.857rem;color:var(--mt);line-height:1.8">
-      מה גבוה: <span style="color:var(--red)">Michigan 47.6 · RRP $158B · CAPE 40.67</span><br>
-      מה נמוך: <span style="color:var(--grn)">VIX 17.3 · HY OAS 2.95% · Sahm 0.20</span>
+      מה גבוה: <span style="color:var(--red)">Michigan <span id="sum-mich">47.6</span> · RRP $<span id="sum-rrp">158</span>B · CAPE <span id="sum-cape">40.67</span></span><br>
+      מה נמוך: <span style="color:var(--grn)">VIX <span id="sum-vix">17.3</span> · HY OAS <span id="sum-hyoas">2.95</span>% · Sahm <span id="sum-sahm">0.20</span></span>
     </div>
   </div>
 
@@ -1568,7 +1568,7 @@ function updateEWBanner(signals, trigScore, vels){
     <div class="gc-bar-wrap"><div class="gc-bar f" id="fBar" style="width:78%"></div></div>
     <div class="gc-status f-HIGH" id="fStatus">🟣 HIGH FRAGILITY — חבית גדולה מאוד</div>
     <div style="margin-top:12px;font-family:var(--mono);font-size:0.857rem;color:var(--mt);line-height:1.8">
-      מה גבוה: <span style="color:#a78bfa">M7 ריכוז 33.8% · Passive 53% · Corp Leverage 3.8x</span><br>
+      מה גבוה: <span style="color:#a78bfa">M7 ריכוז <span id="sum-m7">33.8</span>% · Passive 53% · Corp Leverage 3.8x</span><br>
       מה נמוך: <span style="color:var(--grn)">— (כולם גבוהים)</span>
     </div>
   </div>
@@ -3387,6 +3387,15 @@ function applyAll(trig,frag,d){
   // Update KPI sub labels
   const trigEl=$('kpi-trigger'); if(trigEl){const sub=trigEl.nextElementSibling;if(sub)sub.textContent='/ 100 · '+zoneT(trig);}
   const fragEl=$('kpi-frag'); if(fragEl){const sub=fragEl.nextElementSibling;if(sub)sub.textContent='/ 100 · '+zoneF(frag);}
+
+  // v11.6.6: Update TRIGGER RISK + FRAGILITY summary strips
+  safeSet('sum-mich',  d.michigan?.toFixed(1));
+  safeSet('sum-rrp',   d.rrp?.toFixed(0));
+  safeSet('sum-cape',  d.cape?.toFixed(2));
+  safeSet('sum-vix',   d.vix?.toFixed(1));
+  safeSet('sum-hyoas', d.hy_oas?.toFixed(2));
+  safeSet('sum-sahm',  d.sahm?.toFixed(2));
+  safeSet('sum-m7',    d.m7?.toFixed(1));
 
 
   // V11.2: Update KPI strip
