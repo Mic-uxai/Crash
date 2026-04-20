@@ -865,27 +865,39 @@ function updateEWBanner(signals, trigScore, vels){
 /* ════════════════════════════════════════════════════════════════
 /* ════════════════════════════════════════════════════════════════
    v11.6.7 — MARKET SENTIMENT CARD (Layer 3)
-   Fear & Greed Index from CNN + historical context
+   Fear & Greed Index from CNN — styled to complement CTS card below it
    ════════════════════════════════════════════════════════════════ */
-.sentiment-row {
+
+/* Grid container pairing CTS (65%) with Sentiment (35%) side-by-side */
+.cts-sentiment-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 65fr 35fr;
   gap: 16px;
-  margin: 16px 0 24px 0;
+  align-items: stretch;
+  margin: 24px 0 32px 0;
 }
+/* Reset margins on children since grid gap handles spacing */
+.cts-sentiment-grid > .cts-card,
+.cts-sentiment-grid > .sentiment-card {
+  margin: 0;
+  height: 100%;
+}
+
 .sentiment-card {
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border: 2px solid #3b82f6;
-  border-radius: 14px;
-  padding: 22px 26px;
+  border: 3px solid #3b82f6;
+  border-radius: 16px;
+  padding: 20px 22px;
   box-shadow: 0 6px 22px rgba(59,130,246,.22), 0 2px 6px rgba(0,0,0,.06);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 .sentiment-card::before {
   content: '📡 LIVE';
   position: absolute;
   top: -12px;
-  right: 24px;
+  right: 20px;
   background: #3b82f6;
   color: #fff;
   padding: 4px 12px;
@@ -898,129 +910,131 @@ function updateEWBanner(signals, trigScore, vels){
 }
 .sent-header {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 14px;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(59,130,246,.25);
 }
 .sent-title {
   font-family: var(--mono);
-  font-size: 1.24rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #1e3a8a;
   letter-spacing: 0.02em;
+  margin-bottom: 2px;
 }
 .sent-source {
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: #3b82f6;
 }
-.sent-main {
+.sent-score-block {
   display: flex;
   align-items: baseline;
-  gap: 18px;
-  margin-bottom: 16px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .sent-score-big {
   font-family: var(--mono);
-  font-size: 4.2rem;
+  font-size: 2.8rem;
   font-weight: 900;
   line-height: 1;
   color: #1e40af;
+  display: inline-block;
 }
-.sent-score-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.sent-score-denom {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: #6b7280;
+  display: inline-block;
 }
 .sent-rating {
   font-family: var(--mono);
-  font-size: 1.1rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #1e40af;
-  padding: 4px 12px;
+  padding: 4px 10px;
   background: rgba(59,130,246,.15);
   border-radius: 8px;
   display: inline-block;
 }
-.sent-denom {
-  font-family: var(--mono);
-  font-size: 0.82rem;
-  color: #6b7280;
-}
 .sent-gauge-bar {
-  height: 14px;
-  background: linear-gradient(90deg, #991b1b 0%, #b91c1c 22%, #a16207 45%, #16a34a 78%, #166534 100%);
-  border-radius: 7px;
+  height: 12px;
+  /* Gradient 270deg: right=fear(red), left=greed(green) — matches Hebrew reading */
+  background: linear-gradient(270deg, #991b1b 0%, #b91c1c 22%, #a16207 45%, #16a34a 78%, #166534 100%);
+  border-radius: 6px;
   position: relative;
-  margin: 14px 0 10px 0;
+  margin: 12px 0 8px 0;
   box-shadow: inset 0 1px 3px rgba(0,0,0,.15);
 }
 .sent-gauge-pointer {
   position: absolute;
-  top: -5px;
-  bottom: -5px;
+  top: -4px;
+  bottom: -4px;
   width: 4px;
   background: #1e293b;
   border-radius: 2px;
-  transform: translateX(-50%);
+  transform: translateX(50%);
   box-shadow: 0 0 0 2px rgba(255,255,255,.6), 0 2px 4px rgba(0,0,0,.25);
-  transition: left 0.4s cubic-bezier(.2,.8,.2,1);
+  transition: right 0.4s cubic-bezier(.2,.8,.2,1);
 }
 .sent-gauge-labels {
   display: flex;
   justify-content: space-between;
   font-family: var(--mono);
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   color: #475569;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 .sent-history {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin: 14px 0;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 10px 0;
 }
 .sent-hist-item {
   background: rgba(255,255,255,.55);
   border: 1px solid rgba(59,130,246,.2);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   text-align: center;
 }
 .sent-hist-lbl {
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #6b7280;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 .sent-hist-val {
   font-family: var(--mono);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #1e3a8a;
 }
 .sent-caption {
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   color: #6b7280;
   text-align: center;
-  margin-top: 10px;
+  margin-top: auto;
   padding-top: 10px;
   border-top: 1px solid rgba(59,130,246,.15);
-  line-height: 1.5;
-}
-@media (max-width: 720px) {
-  .sentiment-card { padding: 16px 14px; }
-  .sent-title { font-size: 1.05rem; }
-  .sent-score-big { font-size: 3rem; }
-  .sent-rating { font-size: 0.9rem; padding: 3px 9px; }
-  .sent-gauge-labels { font-size: 0.58rem; }
-  .sent-history { grid-template-columns: repeat(2, 1fr); }
-  .sent-hist-val { font-size: 0.95rem; }
+  line-height: 1.4;
 }
 
+/* Mobile: collapse grid to stacked, enlarge sentiment content */
+@media (max-width: 900px) {
+  .cts-sentiment-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .sentiment-card { padding: 16px 14px; }
+  .sent-score-big { font-size: 2.4rem; }
+  .sent-rating { font-size: 0.82rem; padding: 3px 9px; }
+  .sent-gauge-labels { font-size: 0.56rem; }
+  .sent-hist-val { font-size: 0.95rem; }
+}
 /* ════════════════════════════════════════════════════════════════
    CTS v11.6.7 — CRASH TIMING SCORE MODULE (high prominence)
    3 validated indicators: Yield Curve Re-steep + VIX + BAA Spread
@@ -1477,7 +1491,9 @@ function updateEWBanner(signals, trigScore, vels){
      3 indicators, all passed ≥3/5 hit rate + lift ≥1.7x backtest.
      Sources: Yield Curve Re-steep (lift 2.13x) + VIX (2.27x/1.61x)
               + BAA 4w-change (1.97x). Base rate 13.2%.
+     v11.6.7: Paired horizontally with Market Sentiment (65/35 split)
      ══════════════════════════════════════════════════════════════════ -->
+<div class="cts-sentiment-grid">
 <section class="cts-card" id="ctsCard">
   <div class="cts-header">
     <div>
@@ -1535,6 +1551,59 @@ function updateEWBanner(signals, trigScore, vels){
     הציון הוא <strong>אינדיקציה, לא תחזית וודאית</strong>.
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════════
+     v11.6.7: LAYER 3 — MARKET SENTIMENT (LIVE)
+     Placed immediately after CTS card for analytical pairing.
+══════════════════════════════════════════════ -->
+<div class="sentiment-card">
+  <div class="sent-header">
+    <div>
+      <div class="sent-title">📡 Market Sentiment · Fear &amp; Greed</div>
+      <div class="sent-source">CNN · מתעדכן כל 15 דקות · מה המשתתפים חושבים</div>
+    </div>
+    <div class="sent-score-block">
+      <div class="sent-score-big" id="fgScore">—</div>
+      <div class="sent-score-denom">/ 100</div>
+      <div class="sent-rating" id="fgRating">ממתין לREFRESH</div>
+    </div>
+  </div>
+  
+  <div class="sent-gauge-bar">
+    <div class="sent-gauge-pointer" id="fgPointer" style="right: 50%"></div>
+  </div>
+  <div class="sent-gauge-labels">
+    <span style="color:#991b1b;font-weight:700">0 — פחד קיצוני</span>
+    <span style="color:#b91c1c;font-weight:700">25</span>
+    <span style="color:#a16207;font-weight:700">45 — ניטרלי</span>
+    <span style="color:#16a34a;font-weight:700">75</span>
+    <span style="color:#166534;font-weight:700">100 — חמדנות קיצונית</span>
+  </div>
+  
+  <div class="sent-history">
+    <div class="sent-hist-item">
+      <div class="sent-hist-lbl">אתמול</div>
+      <div class="sent-hist-val" id="fgPrev">—</div>
+    </div>
+    <div class="sent-hist-item">
+      <div class="sent-hist-lbl">שבוע</div>
+      <div class="sent-hist-val" id="fg1w">—</div>
+    </div>
+    <div class="sent-hist-item">
+      <div class="sent-hist-lbl">חודש</div>
+      <div class="sent-hist-val" id="fg1m">—</div>
+    </div>
+    <div class="sent-hist-item">
+      <div class="sent-hist-lbl">שנה</div>
+      <div class="sent-hist-val" id="fg1y">—</div>
+    </div>
+  </div>
+  
+  <div class="sent-caption" id="fgCaption">
+    7 רכיבים: momentum · strength · breadth · put/call · junk bond demand · volatility · safe haven
+  </div>
+</div>
+</div><!-- /.cts-sentiment-grid -->
 
 
 <!-- ══ V11.4: SNAPSHOT LOGGER ══ -->
@@ -1729,62 +1798,6 @@ function updateEWBanner(signals, trigScore, vels){
     <div style="margin-top:12px;font-family:var(--mono);font-size:0.857rem;color:var(--mt);line-height:1.8">
       מה גבוה: <span style="color:#a78bfa">M7 ריכוז <span id="sum-m7">33.8</span>% · Passive 53% · Corp Leverage 3.8x</span><br>
       מה נמוך: <span style="color:var(--grn)">— (כולם גבוהים)</span>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════
-     v11.6.7: LAYER 3 — MARKET SENTIMENT (LIVE)
-══════════════════════════════════════════════ -->
-<div class="slabel"><em class="t-blu">// LAYER 3 — MARKET SENTIMENT</em> — מה המשתתפים חושבים · נתונים חיים<span class="flex"></span></div>
-
-<div class="sentiment-row">
-  <div class="sentiment-card">
-    <div class="sent-header">
-      <div class="sent-title">Fear &amp; Greed Index</div>
-      <div class="sent-source">CNN · מתעדכן כל 15 דקות</div>
-    </div>
-    
-    <div class="sent-main">
-      <div class="sent-score-big" id="fgScore">—</div>
-      <div class="sent-score-meta">
-        <div class="sent-rating" id="fgRating">ממתין לREFRESH</div>
-        <div class="sent-denom">/ 100</div>
-      </div>
-    </div>
-    
-    <div class="sent-gauge-bar">
-      <div class="sent-gauge-pointer" id="fgPointer" style="left: 50%"></div>
-    </div>
-    <div class="sent-gauge-labels">
-      <span style="color:#991b1b;font-weight:700">0 — Extreme Fear</span>
-      <span style="color:#b91c1c;font-weight:700">25</span>
-      <span style="color:#a16207;font-weight:700">45 — Neutral</span>
-      <span style="color:#16a34a;font-weight:700">75</span>
-      <span style="color:#166534;font-weight:700">100 — Extreme Greed</span>
-    </div>
-    
-    <div class="sent-history">
-      <div class="sent-hist-item">
-        <div class="sent-hist-lbl">אתמול</div>
-        <div class="sent-hist-val" id="fgPrev">—</div>
-      </div>
-      <div class="sent-hist-item">
-        <div class="sent-hist-lbl">שבוע</div>
-        <div class="sent-hist-val" id="fg1w">—</div>
-      </div>
-      <div class="sent-hist-item">
-        <div class="sent-hist-lbl">חודש</div>
-        <div class="sent-hist-val" id="fg1m">—</div>
-      </div>
-      <div class="sent-hist-item">
-        <div class="sent-hist-lbl">שנה</div>
-        <div class="sent-hist-val" id="fg1y">—</div>
-      </div>
-    </div>
-    
-    <div class="sent-caption" id="fgCaption">
-      7 רכיבים: momentum · strength · breadth · put/call · junk bond demand · volatility · safe haven
     </div>
   </div>
 </div>
@@ -3721,9 +3734,9 @@ function updateFearGreedCard(fg){
     if(scoreEl) scoreEl.style.color = fg_color;
   }
   
-  // Pointer position on gauge bar (0-100 → 0%-100% left)
+  // Pointer position on gauge bar (RTL: using 'right' so 0=right edge=fear, 100=left edge=greed)
   const pointer = $('fgPointer');
-  if(pointer) pointer.style.left = clamp(s, 0, 100) + '%';
+  if(pointer) pointer.style.right = clamp(s, 0, 100) + '%';
   
   // Historical values
   const h = fg.history || {};
