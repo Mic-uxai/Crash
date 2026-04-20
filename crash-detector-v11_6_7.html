@@ -961,8 +961,10 @@ function updateEWBanner(signals, trigScore, vels){
 }
 .sent-gauge-bar {
   height: 12px;
-  /* Gradient 270deg: right=fear(red), left=greed(green) — matches Hebrew reading */
-  background: linear-gradient(270deg, #991b1b 0%, #b91c1c 22%, #a16207 45%, #16a34a 78%, #166534 100%);
+  /* v11.6.7: Contrarian interpretation — Extreme Fear (0) = green (opportunity, "buy fear"),
+     Extreme Greed (100) = red (risk, "sell greed"). Matches CTS where green=safe.
+     Gradient 90deg: right=fear(green/safe), left=greed(red/risk) — matches Hebrew RTL reading */
+  background: linear-gradient(90deg, #991b1b 0%, #b91c1c 22%, #a16207 45%, #16a34a 78%, #166534 100%);
   border-radius: 6px;
   position: relative;
   margin: 12px 0 8px 0;
@@ -1573,11 +1575,11 @@ function updateEWBanner(signals, trigScore, vels){
     <div class="sent-gauge-pointer" id="fgPointer" style="right: 50%"></div>
   </div>
   <div class="sent-gauge-labels">
-    <span style="color:#991b1b;font-weight:700">0 — פחד קיצוני</span>
-    <span style="color:#b91c1c;font-weight:700">25</span>
+    <span style="color:#166534;font-weight:700">0 — פחד קיצוני</span>
+    <span style="color:#16a34a;font-weight:700">25</span>
     <span style="color:#a16207;font-weight:700">45 — ניטרלי</span>
-    <span style="color:#16a34a;font-weight:700">75</span>
-    <span style="color:#166534;font-weight:700">100 — חמדנות קיצונית</span>
+    <span style="color:#b91c1c;font-weight:700">75</span>
+    <span style="color:#991b1b;font-weight:700">100 — חמדנות קיצונית</span>
   </div>
   
   <div class="sent-history">
@@ -1600,7 +1602,7 @@ function updateEWBanner(signals, trigScore, vels){
   </div>
   
   <div class="sent-caption" id="fgCaption">
-    7 רכיבים: momentum · strength · breadth · put/call · junk bond demand · volatility · safe haven
+    <strong style="color:#1e3a8a">פרשנות קונטריאן:</strong> פחד קיצוני = הזדמנות · חמדנות קיצונית = סיכון
   </div>
 </div>
 </div><!-- /.cts-sentiment-grid -->
@@ -3719,13 +3721,15 @@ function updateFearGreedCard(fg){
     }[fg.rating] || fg.rating;
     ratingEl.textContent = heRating;
     
-    // Color theme by rating
+    // Color theme by rating — CONTRARIAN interpretation (v11.6.7):
+    // Low score (fear) = green (opportunity, "buy fear")
+    // High score (greed) = red (risk, "sell greed")
     let bg, fg_color;
-    if(s < 25)      { bg='rgba(153,27,27,.15)';   fg_color='#991b1b'; }
-    else if(s < 45) { bg='rgba(185,28,28,.12)';   fg_color='#b91c1c'; }
-    else if(s <= 55){ bg='rgba(161,98,7,.15)';    fg_color='#a16207'; }
-    else if(s <= 75){ bg='rgba(22,163,74,.15)';   fg_color='#16a34a'; }
-    else            { bg='rgba(22,101,52,.15)';   fg_color='#166534'; }
+    if(s < 25)      { bg='rgba(22,101,52,.15)';   fg_color='#166534'; } // Extreme Fear → green
+    else if(s < 45) { bg='rgba(22,163,74,.15)';   fg_color='#16a34a'; } // Fear → light green
+    else if(s <= 55){ bg='rgba(161,98,7,.15)';    fg_color='#a16207'; } // Neutral → amber
+    else if(s <= 75){ bg='rgba(185,28,28,.12)';   fg_color='#b91c1c'; } // Greed → light red
+    else            { bg='rgba(153,27,27,.15)';   fg_color='#991b1b'; } // Extreme Greed → red
     ratingEl.style.background = bg;
     ratingEl.style.color = fg_color;
     
@@ -3745,7 +3749,7 @@ function updateFearGreedCard(fg){
   safeSet('fg1m',   h.one_month_ago  != null ? String(h.one_month_ago)  : '—');
   safeSet('fg1y',   h.one_year_ago   != null ? String(h.one_year_ago)   : '—');
   
-  // Caption: 1-week change direction
+  // Caption: 1-week change direction + contrarian warning
   const captionEl = $('fgCaption');
   if(captionEl && h.one_week_ago != null){
     const delta = s - h.one_week_ago;
@@ -3753,7 +3757,14 @@ function updateFearGreedCard(fg){
     const trendTxt = delta > 3 ? `עלייה של ${delta} נקודות בשבוע` 
                    : delta < -3 ? `ירידה של ${Math.abs(delta)} נקודות בשבוע`
                    : 'יציב בשבוע האחרון';
-    captionEl.innerHTML = `<strong>${arrow} ${trendTxt}</strong> · 7 רכיבים: momentum · strength · breadth · put/call · junk bond demand · volatility · safe haven`;
+    // Interpretation line based on current zone
+    let interp;
+    if(s >= 75)      interp = '<strong style="color:#991b1b">⚠ חמדנות קיצונית = סיכון</strong>';
+    else if(s >= 55) interp = '<strong style="color:#b91c1c">חמדנות = שוק מתוח</strong>';
+    else if(s >= 45) interp = '<strong style="color:#a16207">ניטרלי</strong>';
+    else if(s >= 25) interp = '<strong style="color:#16a34a">פחד = הזדמנות בשלה</strong>';
+    else             interp = '<strong style="color:#166534">✓ פחד קיצוני = הזדמנות</strong>';
+    captionEl.innerHTML = `${arrow} ${trendTxt} · ${interp}<br><span style="color:#94a3b8">7 רכיבים: momentum · strength · breadth · put/call · junk bond demand · volatility · safe haven</span>`;
   }
 }
 
