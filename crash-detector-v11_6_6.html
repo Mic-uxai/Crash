@@ -2406,47 +2406,45 @@ async function fetchFredHistory(seriesId, apiKey, limit){
   const fredUrl=`https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&sort_order=desc&limit=${limit}&api_key=${apiKey}&file_type=json`;
   const enc = encodeURIComponent(fredUrl);
   
-  // v11.6.6: Retry logic — try entire proxy chain twice with 3s pause between attempts.
-  // CORS proxies are flaky; a brief wait often allows recovery.
-  const MAX_ATTEMPTS = 2;
-  const RETRY_DELAY_MS = 3000;
-  let lastError = null;
-
-  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
+  // v11.6.6: Primary route through our Cloudflare Worker proxy (reliable, no rate limits).
+  // Falls back to direct + public proxies only if Worker is down.
+  const sources = [
+    // PRIMARY: Our own Cloudflare Worker
+    async () => {
+      const workerUrl = `${SCRAPER_URL}/fred?series=${encodeURIComponent(seriesId)}&api_key=${encodeURIComponent(apiKey)}&limit=${limit}&sort_order=desc`;
+      const r = await fetch(workerUrl, {cache:'no-store'});
+      if(!r.ok) throw new Error(`worker ${r.status}`);
+      return r.json();
+    },
     // Direct
-    try{
+    async () => {
       const r = await fetch(fredUrl, {mode:'cors', cache:'no-store'});
-      if(r.ok){ const j = await r.json(); if(j.observations) return j.observations; }
-    }catch(e){ lastError = e; }
-    // allorigins
-    try{
+      if(!r.ok) throw new Error(`direct ${r.status}`);
+      return r.json();
+    },
+    // allorigins (last resort)
+    async () => {
       const r = await fetch(`https://api.allorigins.win/get?url=${enc}`, {cache:'no-store'});
-      if(r.ok){ const w = await r.json(); const j = JSON.parse(w.contents); if(j.observations) return j.observations; }
-    }catch(e){ lastError = e; }
-    // corsproxy
+      if(!r.ok) throw new Error(`allorigins ${r.status}`);
+      const w = await r.json();
+      if(!w.contents) throw new Error('allorigins empty');
+      return JSON.parse(w.contents);
+    },
+  ];
+  
+  let lastError = null;
+  for(const fn of sources){
     try{
-      const r = await fetch(`https://corsproxy.io/?url=${enc}`, {cache:'no-store'});
-      if(r.ok){ const j = await r.json(); if(j.observations) return j.observations; }
-    }catch(e){ lastError = e; }
-    // codetabs
-    try{
-      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${enc}`, {cache:'no-store'});
-      if(r.ok){ const j = await r.json(); if(j.observations) return j.observations; }
-    }catch(e){ lastError = e; }
-    // thingproxy
-    try{
-      const r = await fetch(`https://thingproxy.freeboard.io/fetch/${fredUrl}`, {cache:'no-store'});
-      if(r.ok){ const j = await r.json(); if(j.observations) return j.observations; }
-    }catch(e){ lastError = e; }
-
-    // All proxies failed this attempt. If not the last attempt, wait and retry.
-    if(attempt < MAX_ATTEMPTS){
-      console.warn(`[CTS] All proxies failed for ${seriesId} (attempt ${attempt}/${MAX_ATTEMPTS}). Retrying in ${RETRY_DELAY_MS}ms...`);
-      await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-    }
+      const data = await Promise.race([
+        fn(),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),7000))
+      ]);
+      if(data.observations) return data.observations;
+      throw new Error('no observations in response');
+    }catch(e){ lastError = e; continue; }
   }
-
-  throw new Error(`All proxies failed for ${seriesId} after ${MAX_ATTEMPTS} attempts — נסה שוב בעוד דקה`);
+  
+  throw new Error(`All sources failed for ${seriesId}: ${lastError?.message || 'unknown'}`);
 }
 
 /* Extract numeric values from FRED observations (newest last) */
@@ -2605,17 +2603,23 @@ async function fetchOneFred(seriesId,apiKey){
   const fredUrl=`https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&sort_order=desc&limit=5&api_key=${apiKey}&file_type=json`;
   const enc = encodeURIComponent(fredUrl);
 
-  // v11.6.6: Removed Claude API proxy (only worked inside claude.ai).
-  // Now running on https:// (GitHub Pages), direct fetch may work for FRED.
-  // If not, fall back to public CORS proxies.
+  // v11.6.6: Primary route via our own Cloudflare Worker (reliable, no rate limits,
+  // no CORS issues). Falls back to direct + public proxies if Worker is down.
   const fallbacks = [
-    // Direct CORS (works on https:// origins)
+    // PRIMARY: Our own Cloudflare Worker proxy
+    async () => {
+      const workerUrl = `${SCRAPER_URL}/fred?series=${encodeURIComponent(seriesId)}&api_key=${encodeURIComponent(apiKey)}&limit=5&sort_order=desc`;
+      const r = await fetch(workerUrl, {cache:'no-store'});
+      if(!r.ok) throw new Error(`worker HTTP ${r.status}`);
+      return r.json();
+    },
+    // Direct CORS (works when FRED's CDN allows the origin)
     async () => {
       const r = await fetch(fredUrl, {mode:'cors', cache:'no-store'});
       if(!r.ok) throw new Error(`direct HTTP ${r.status}`);
       return r.json();
     },
-    // allorigins.win
+    // Public fallbacks — kept for extreme redundancy, but usually unused
     async () => {
       const r = await fetch(`https://api.allorigins.win/get?url=${enc}`, {cache:'no-store'});
       if(!r.ok) throw new Error(`allorigins ${r.status}`);
@@ -2623,27 +2627,14 @@ async function fetchOneFred(seriesId,apiKey){
       if(!w.contents) throw new Error('allorigins empty');
       return JSON.parse(w.contents);
     },
-    // corsproxy.io
     async () => {
       const r = await fetch(`https://corsproxy.io/?url=${enc}`, {cache:'no-store'});
       if(!r.ok) throw new Error(`corsproxy ${r.status}`);
       return r.json();
     },
-    // api.codetabs.com
-    async () => {
-      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${enc}`, {cache:'no-store'});
-      if(!r.ok) throw new Error(`codetabs ${r.status}`);
-      return r.json();
-    },
-    // thingproxy
-    async () => {
-      const r = await fetch(`https://thingproxy.freeboard.io/fetch/${fredUrl}`, {cache:'no-store'});
-      if(!r.ok) throw new Error(`thingproxy ${r.status}`);
-      return r.json();
-    },
   ];
 
-  // Try each fallback with 5s timeout each
+  // Try each with 5s timeout
   let lastErr;
   for(const fn of fallbacks){
     try{
@@ -2660,7 +2651,7 @@ async function fetchOneFred(seriesId,apiKey){
       continue;
     }
   }
-  throw new Error(lastErr?.message || 'all proxies failed');
+  throw new Error(lastErr?.message || 'all sources failed');
 }
 
 async function testFred(){
