@@ -943,6 +943,11 @@ function updateEWBanner(signals, trigScore, vels){
   gap: 4px;
   flex-shrink: 0;
 }
+.sent-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
 .sent-score-big {
   font-family: var(--mono);
   font-size: 4.5rem;
@@ -953,9 +958,9 @@ function updateEWBanner(signals, trigScore, vels){
 }
 .sent-score-denom {
   font-family: var(--mono);
-  font-size: 1rem;
+  font-size: 1.4rem;
   color: #1e40af;
-  margin-top: -8px;
+  font-weight: 600;
 }
 .sent-rating {
   font-family: var(--mono);
@@ -1106,6 +1111,11 @@ function updateEWBanner(signals, trigScore, vels){
   gap: 4px;
   flex-shrink: 0;
 }
+.cts-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
 .cts-score-big {
   font-family: var(--mono);
   font-size: 4.5rem;
@@ -1116,9 +1126,9 @@ function updateEWBanner(signals, trigScore, vels){
 }
 .cts-score-denom {
   font-family: var(--mono);
-  font-size: 1rem;
+  font-size: 1.4rem;
   color: #92400e;
-  margin-top: -8px;
+  font-weight: 600;
 }
 .cts-signal-pill {
   padding: 8px 18px;
@@ -1517,8 +1527,10 @@ function updateEWBanner(signals, trigScore, vels){
       </div>
     </div>
     <div class="cts-score-block">
-      <div class="cts-score-big" id="ctsScore">—</div>
-      <div class="cts-score-denom">/ 100</div>
+      <div class="cts-score-row">
+        <div class="cts-score-big" id="ctsScore">—</div>
+        <div class="cts-score-denom">/ 100</div>
+      </div>
       <div class="cts-signal-pill" id="ctsPill" style="background:#9ca3af">ממתין</div>
       <div class="cts-prob-hint" id="ctsProbHint">&nbsp;</div>
     </div>
@@ -1533,19 +1545,43 @@ function updateEWBanner(signals, trigScore, vels){
 
   <div class="cts-components">
     <div class="cts-component">
-      <div class="cts-comp-label">📐 Yield Curve Re-steep</div>
+      <div class="ind-name-wrap" data-key="cts-yc" style="justify-content:center;margin-bottom:8px">
+        <span class="name-txt cts-comp-label" style="font-size:inherit">📐 Yield Curve Re-steep</span>
+        <span class="tt-badge">ⓘ</span>
+        <div class="tt-pop">
+          <div class="tt-title">Yield Curve Re-steepening — התלחלות עקומת התשואה</div>
+          <div class="tt-body">ה-spread בין 10 שנים ל-3 חודשים (T10Y3M). כשהעקומה הפוכה (spread שלילי, 10Y נמוך מ-3M) זה סימן קלאסי לרצסיה — התרחש לפני כל רצסיה אמריקאית מאז 1969. אבל הטיימינג קריטי: קריסות שוק לא מתרחשות בזמן ההיפוך עצמו, אלא כשהעקומה <strong>מתלחלחת חזרה</strong> — כלומר spread חוזר לחיובי. זה מסמן שהפד התחיל לחתוך ריבית, לרוב כי הכלכלה כבר מתחילה להיסדק. המדד מחשב שינוי ב-90 ימים אחרונים: עלייה מעל 50bps אחרי תקופת היפוך = אזהרה. ב-backtest על 5 קריסות: hit rate 80%, lift 2.13x מהבסיס.</div>
+          <div class="tt-source">מקור: FRED T10Y3M · Backtest על GFC 2008, Q4-2018, COVID 2020, 2022, 2025</div>
+        </div>
+      </div>
       <div class="cts-comp-value" id="ctsYcScore">—</div>
       <div class="cts-comp-detail" id="ctsYcDetail">—</div>
       <span class="cts-comp-pill" id="ctsYcPill" style="background:#9ca3af">—</span>
     </div>
     <div class="cts-component">
-      <div class="cts-comp-label">😨 VIX Composite</div>
+      <div class="ind-name-wrap" data-key="cts-vix" style="justify-content:center;margin-bottom:8px">
+        <span class="name-txt cts-comp-label" style="font-size:inherit">😨 VIX Composite</span>
+        <span class="tt-badge">ⓘ</span>
+        <div class="tt-pop">
+          <div class="tt-title">VIX Composite — Level + Velocity</div>
+          <div class="tt-body">מדד הפחד של ה-CBOE, מחושב מאופציות על S&P 500. מראה ציפייה לתנודתיות ב-30 הימים הבאים. הרכיב הראשון הוא <strong>רמת ה-VIX</strong> (percentile ל-5 שנים) — ערכים מעל 25–30 מסמנים מתח. הרכיב השני הוא <strong>מהירות</strong> (שינוי 4 שבועות) — עלייה פתאומית חשובה יותר מרמה גבוהה מתמשכת. שילוב שניהם פועל מצוין: ברוב הקריסות ההיסטוריות, VIX עלה בחדות שבועות לפני שהשוק נסדק. lift של רכיב הרמה: 2.27x. lift של רכיב המהירות: 1.61x. המשוקלל ביניהם משתמש בכיוון חד-צדדי — רק עלייה נחשבת אות.</div>
+          <div class="tt-source">מקור: FRED VIXCLS · CBOE · חיפוי 5y percentile</div>
+        </div>
+      </div>
       <div class="cts-comp-value" id="ctsVixScore">—</div>
       <div class="cts-comp-detail" id="ctsVixDetail">—</div>
       <span class="cts-comp-pill" id="ctsVixPill" style="background:#9ca3af">—</span>
     </div>
     <div class="cts-component">
-      <div class="cts-comp-label">💳 BAA Credit Spread</div>
+      <div class="ind-name-wrap" data-key="cts-baa" style="justify-content:center;margin-bottom:8px">
+        <span class="name-txt cts-comp-label" style="font-size:inherit">💳 BAA Credit Spread</span>
+        <span class="tt-badge">ⓘ</span>
+        <div class="tt-pop">
+          <div class="tt-title">BAA Credit Spread — שינוי 4 שבועות</div>
+          <div class="tt-body">ה-spread בין אג"ח קונצרני בדירוג BAA (הדירוג הנמוך ביותר בין ה-investment grade, מעל junk) לאג"ח ממשלתית 10 שנים. <strong>התרחבות מהירה של ה-spread היא אות מוקדם לבעיה</strong> — המשקיעים דורשים פיצוי גבוה יותר על סיכון אשראי, לרוב לפני שמשהו נשבר במניות. שוק האג"ח הקונצרני מקדים את שוק המניות בכ-4–8 שבועות ברוב הקריסות. המדד מחשב שינוי 4 שבועות (20 ימי מסחר). percentile גבוה של שינוי זה = אזהרה. lift על 5 קריסות היסטוריות: 1.97x מהבסיס. משלים את VIX (פחד מניות) ו-Yield Curve (מאקרו) — 3 ערוצי אות נפרדים.</div>
+          <div class="tt-source">מקור: FRED BAA10Y · Moody's Investors Service</div>
+        </div>
+      </div>
       <div class="cts-comp-value" id="ctsBaaScore">—</div>
       <div class="cts-comp-detail" id="ctsBaaDetail">—</div>
       <span class="cts-comp-pill" id="ctsBaaPill" style="background:#9ca3af">—</span>
@@ -1576,8 +1612,10 @@ function updateEWBanner(signals, trigScore, vels){
       <div class="sent-source">Fear &amp; Greed · CNN · מה המשתתפים חושבים</div>
     </div>
     <div class="sent-score-block">
-      <div class="sent-score-big" id="fgScore">—</div>
-      <div class="sent-score-denom">/ 100</div>
+      <div class="sent-score-row">
+        <div class="sent-score-big" id="fgScore">—</div>
+        <div class="sent-score-denom">/ 100</div>
+      </div>
       <div class="sent-rating" id="fgRating">ממתין</div>
     </div>
   </div>
