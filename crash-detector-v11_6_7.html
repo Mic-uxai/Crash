@@ -910,54 +910,62 @@ function updateEWBanner(signals, trigScore, vels){
 }
 .sent-header {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(59,130,246,.25);
 }
+.sent-title-block {
+  flex: 1;
+  min-width: 0;
+}
 .sent-title {
   font-family: var(--mono);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #1e3a8a;
   letter-spacing: 0.02em;
   margin-bottom: 2px;
+  line-height: 1.25;
 }
 .sent-source {
   font-family: var(--mono);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: #3b82f6;
+  line-height: 1.3;
 }
 .sent-score-block {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
 }
 .sent-score-big {
   font-family: var(--mono);
-  font-size: 2.8rem;
-  font-weight: 900;
+  font-size: 4.5rem;
+  font-weight: 800;
   line-height: 1;
   color: #1e40af;
-  display: inline-block;
+  text-shadow: 0 2px 4px rgba(30,64,175,.15);
 }
 .sent-score-denom {
   font-family: var(--mono);
-  font-size: 0.78rem;
-  color: #6b7280;
-  display: inline-block;
+  font-size: 1rem;
+  color: #1e40af;
+  margin-top: -8px;
 }
 .sent-rating {
   font-family: var(--mono);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: #1e40af;
-  padding: 4px 10px;
+  padding: 6px 14px;
   background: rgba(59,130,246,.15);
   border-radius: 8px;
-  display: inline-block;
+  margin-top: 6px;
+  letter-spacing: 0.02em;
 }
 .sent-gauge-bar {
   height: 12px;
@@ -1032,8 +1040,11 @@ function updateEWBanner(signals, trigScore, vels){
     gap: 12px;
   }
   .sentiment-card { padding: 16px 14px; }
-  .sent-score-big { font-size: 2.4rem; }
-  .sent-rating { font-size: 0.82rem; padding: 3px 9px; }
+  .sent-title { font-size: 1.15rem; }
+  .sent-source { font-size: 0.72rem; }
+  .sent-score-big { font-size: 3.2rem; }
+  .sent-score-denom { font-size: 0.88rem; }
+  .sent-rating { font-size: 0.82rem; padding: 5px 11px; }
   .sent-gauge-labels { font-size: 0.56rem; }
   .sent-hist-val { font-size: 0.95rem; }
 }
@@ -1560,14 +1571,14 @@ function updateEWBanner(signals, trigScore, vels){
 ══════════════════════════════════════════════ -->
 <div class="sentiment-card">
   <div class="sent-header">
-    <div>
-      <div class="sent-title">📡 Market Sentiment · Fear &amp; Greed</div>
-      <div class="sent-source">CNN · מתעדכן כל 15 דקות · מה המשתתפים חושבים</div>
+    <div class="sent-title-block">
+      <div class="sent-title">Market Sentiment</div>
+      <div class="sent-source">Fear &amp; Greed · CNN · מה המשתתפים חושבים</div>
     </div>
     <div class="sent-score-block">
       <div class="sent-score-big" id="fgScore">—</div>
       <div class="sent-score-denom">/ 100</div>
-      <div class="sent-rating" id="fgRating">ממתין לREFRESH</div>
+      <div class="sent-rating" id="fgRating">ממתין</div>
     </div>
   </div>
   
